@@ -1,0 +1,672 @@
+%============================================================================%
+%
+%	DOCUMENT DEFINITION
+%
+%============================================================================%
+
+%we use article class because we want to fully customize the page and don't use a cv template
+\documentclass[10pt,A4]{article}	
+
+
+%----------------------------------------------------------------------------------------
+%	ENCODING
+%----------------------------------------------------------------------------------------
+
+% we use utf8 since we want to build from any machine
+\usepackage[utf8]{inputenc}	
+
+\usepackage{multicol}
+\renewcommand{\columnseprulecolor}{\color{linen}}
+
+%-----------------------------------------------------------	
+%Para añadir las filigranas usamos el siguiente paquete:
+
+\usepackage{pgfornament}
+\usepackage{tikzrput}
+
+%-----------------------------------------------------------
+
+\usepackage{verbatim}
+
+\usepackage{smartdiagram}
+\usepackage{metalogo}
+
+%----------------------------------------------------------------------------------------
+%	LOGIC
+%----------------------------------------------------------------------------------------
+
+% provides \isempty test
+\usepackage{xstring, xifthen}
+
+%Other packages
+\usepackage{qrcode}
+
+
+%----------------------------------------------------------------------------------------
+%	FONT BASICS
+%----------------------------------------------------------------------------------------
+
+% some tex-live fonts - choose your own
+
+%\usepackage[defaultsans]{droidsans}
+%\usepackage[default]{comfortaa}
+%\usepackage{cmbright}
+\usepackage[default]{raleway}
+%\usepackage{fetamont}
+%\usepackage[default]{gillius}
+%\usepackage[light,math]{iwona}
+%\usepackage[thin]{roboto} 
+
+% set font default
+\renewcommand*\familydefault{\sfdefault} 	
+\usepackage[T1]{fontenc}
+
+% more font size definitions
+\usepackage{moresize}
+
+%----------------------------------------------------------------------------------------
+%	FONT AWESOME ICONS
+%---------------------------------------------------------------------------------------- 
+
+% include the fontawesome icon set
+\usepackage{fontawesome}
+
+% use to vertically center content
+% credits to: http://tex.stackexchange.com/questions/7219/how-to-vertically-center-two-images-next-to-each-other
+\newcommand{\vcenteredinclude}[1]{\begingroup
+	\setbox0=\hbox{\includegraphics{#1}}%
+	\parbox{\wd0}{\box0}\endgroup}
+
+% use to vertically center content
+% credits to: http://tex.stackexchange.com/questions/7219/how-to-vertically-center-two-images-next-to-each-other
+\newcommand*{\vcenteredhbox}[1]{\begingroup
+	\setbox0=\hbox{#1}\parbox{\wd0}{\box0}\endgroup}
+
+% icon shortcut
+\newcommand{\icon}[3] { 							
+	\makebox(#2, #2){\textcolor{maincol}{\csname fa#1\endcsname}}
+}	
+
+% icon with text shortcut
+\newcommand{\icontext}[4]{ 						
+	\vcenteredhbox{\icon{#1}{#2}{#3}}  \hspace{2pt}  \parbox{0.9\mpwidth}{\textcolor{#4}{#3}}
+}
+
+% icon with website url
+\newcommand{\iconhref}[5]{ 						
+	\vcenteredhbox{\icon{#1}{#2}{#5}}  \hspace{2pt} \href{#4}{\textcolor{#5}{#3}}
+}
+
+% icon with email link
+\newcommand{\iconemail}[5]{ 						
+	\vcenteredhbox{\icon{#1}{#2}{#5}}  \hspace{2pt} \parbox{0.9\mpwidth}{\textcolor{#4}{#3}}
+}
+
+%----------------------------------------------------------------------------------------
+%	PAGE LAYOUT  DEFINITIONS
+%----------------------------------------------------------------------------------------
+
+% page outer frames (debug-only)
+% \usepackage{showframe}		
+
+% we use paracol to display breakable two columns
+\usepackage{paracol}
+
+% define page styles using geometry
+\usepackage[a4paper]{geometry}
+
+% remove all possible margins
+\geometry{top=0.5cm, bottom=0.5cm, left=0.5cm, right=0.5cm}
+
+\usepackage{fancyhdr}
+\pagestyle{empty}
+
+% space between header and content
+% \setlength{\headheight}{0pt}
+
+% indentation is zero
+\setlength{\parindent}{0mm}
+
+%----------------------------------------------------------------------------------------
+%	TABLE /ARRAY DEFINITIONS
+%---------------------------------------------------------------------------------------- 
+
+% extended aligning of tabular cells
+\usepackage{array}
+
+% custom column right-align with fixed width
+% use like p{size} but via x{size}
+\newcolumntype{x}[1]{%
+	>{\raggedleft\hspace{0pt}}p{#1}}%
+
+
+%----------------------------------------------------------------------------------------
+%	GRAPHICS DEFINITIONS
+%---------------------------------------------------------------------------------------- 
+
+%for header image
+\usepackage{graphicx}
+
+%for drawing graphics		
+\usepackage{tikz}			
+\usetikzlibrary{shapes, backgrounds,mindmap, trees}
+\usetikzlibrary{arrows.meta,
+	chains,
+	positioning}
+
+%----------------------------------------------------------------------------------------
+%	Color DEFINITIONS
+%---------------------------------------------------------------------------------------- 
+\usepackage{transparent}
+\usepackage{color}
+
+% primary color
+\definecolor{maincol}{RGB}{ 225, 0, 0 }
+
+% accent color, secondary
+% \definecolor{accentcol}{RGB}{ 250, 150, 10 }
+
+% dark color
+\definecolor{darkcol}{RGB}{ 70, 70, 70 }
+
+% light color
+\definecolor{lightcol}{RGB}{245,245,245}
+
+
+% Package for links, must be the last package used
+\usepackage[hidelinks]{hyperref}
+
+% returns minipage width minus two times \fboxsep
+% to keep padding included in width calculations
+% can also be used for other boxes / environments
+\newcommand{\mpwidth}{\linewidth-\fboxsep-\fboxsep}
+
+
+
+%============================================================================%
+%
+%	CV COMMANDS
+%
+%============================================================================%
+
+% To make the profile image:
+\newcommand{\profilepic}[1]{\renewcommand{\profilepic}{#1}}
+
+\newlength\imagewidth
+\newlength\imagescale
+\pgfmathsetlength{\imagewidth}{5cm}
+\pgfmathsetlength{\imagescale}{\imagewidth/600}
+
+%----------------------------------------------------------------------------------------
+%	 CV LIST
+%----------------------------------------------------------------------------------------
+
+% renders a standard latex list but abstracts away the environment definition (begin/end)
+\newcommand{\cvlist}[1] {
+	\begin{itemize}{#1}\end{itemize}
+}
+
+%----------------------------------------------------------------------------------------
+%	 CV TEXT
+%----------------------------------------------------------------------------------------
+
+% base class to wrap any text based stuff here. Renders like a paragraph.
+% Allows complex commands to be passed, too.
+% param 1: *any
+\newcommand{\cvtext}[1] {
+	\begin{tabular*}{1\mpwidth}{p{0.98\mpwidth}}
+		\parbox{1\mpwidth}{#1}
+	\end{tabular*}
+}
+
+%----------------------------------------------------------------------------------------
+%	CV SECTION
+%----------------------------------------------------------------------------------------
+
+% Renders a a CV section headline with a nice underline in main color.
+% param 1: section title
+\newcommand{\cvsection}[1] {
+	\vspace{14pt}
+	\cvtext{
+		\textbf{\LARGE{\textcolor{darkcol}{\uppercase{#1}}}}\\[-4pt]
+		\textcolor{maincol}{ \rule{0.1\textwidth}{2pt} } \\
+	}
+}
+
+%----------------------------------------------------------------------------------------
+%	META SKILL
+%----------------------------------------------------------------------------------------
+
+% Renders a progress-bar to indicate a certain skill in percent.
+% param 1: name of the skill / tech / etc.
+% param 2: level (for example in years)
+% param 3: percent, values range from 0 to 1
+
+
+
+\newcommand{\cvskill}[3] {
+	\begin{tabular*}{1\mpwidth}{p{0.72\mpwidth}  r}
+		\textcolor{black}{\textbf{#1}} & \textcolor{maincol}{#2}\\
+	\end{tabular*}%
+	
+	\hspace{4pt}
+	\begin{tikzpicture}[scale=0.9,rounded corners=2pt,very thin]
+		\fill [white] (0,0) rectangle (1\mpwidth, 0.15);
+		\fill [maincol] (0,0) rectangle (#3\mpwidth, 0.15);
+	\end{tikzpicture}%
+}
+
+%----------------------------------------------------------------------------------------
+%	PROGRESS CIRCLE
+%----------------------------------------------------------------------------------------
+
+\newcommand{\progressarc}[8]{
+	\begin{tikzpicture}
+		\draw [line width=#1,#4] (0,#3)  arc[start angle=90,radius=#3,delta angle=-3.60*100]; 
+		\draw [line width=#1,#2] (0,#3)  arc[start angle=90,radius=#3,delta angle=-3.60*#8]; 
+		\node[align=center] at (0,0) {#5};
+		\node[#7=#3+#1,align=center] at (0,0) {#6};
+		
+	\end{tikzpicture}
+}
+
+%----------------------------------------------------------------------------------------
+%	 CV EVENT
+%----------------------------------------------------------------------------------------
+
+% Renders a table and a paragraph (cvtext) wrapped in a parbox (to ensure minimum content
+% is glued together when a pagebreak appears).
+% Additional Information can be passed in text or list form (or other environments).
+% the work you did
+% param 1: time-frame i.e. Sep 14 - Jan 15 etc.
+% param 2:	 event name (job position etc.)
+% param 3: Customer, Employer, Industry
+% param 4: Short description
+% param 5: work done (optional)
+% param 6: technologies include (optional)
+% param 7: achievements (optional)
+\newcommand{\cvevent}[7] {
+	
+	% we wrap this part in a parbox, so title and description are not separated on a pagebreak
+	% if you need more control on page breaks, remove the parbox
+	\parbox{\mpwidth}{
+		\begin{tabular*}{1\mpwidth}{p{0.72\mpwidth}  r}
+			\textcolor{black}{\textbf{#2}} & \colorbox{maincol}{\makebox[0.25\mpwidth]{\textcolor{white}{#1}}} \\
+			\textcolor{maincol}{\textbf{#3}} & \\
+		\end{tabular*}\\[8pt]
+		
+		\ifthenelse{\isempty{#4}}{}{
+			\cvtext{#4}\\
+		}
+	}
+	
+	\ifthenelse{\isempty{#5}}{}{
+		\vspace{9pt}
+		{#5}
+	}
+	
+	\ifthenelse{\isempty{#6}}{}{
+		\vspace{9pt}
+		\cvtext{\textbf{Technologies include:}}\\
+		{#6}
+	}
+	
+	\ifthenelse{\isempty{#7}}{}{
+		\vspace{9pt}
+		\cvtext{\textbf{Achievements include:}}\\
+		{#7}
+	}
+	\vspace{14pt}
+}
+
+%----------------------------------------------------------------------------------------
+%	 CV META EVENT
+%----------------------------------------------------------------------------------------
+
+% Renders a CV event on the sidebar
+% param 1: title
+% param 2: subtitle (optional)
+% param 3: customer, employer, etc,. (optional)
+% param 4: info text (optional)
+\newcommand{\cvmetaevent}[4] {
+	\textcolor{maincol} {\cvtext{\textbf{\begin{flushleft}#1\end{flushleft}}}}
+	
+	\ifthenelse{\isempty{#2}}{}{
+		\textcolor{darkcol} {\cvtext{\textbf{#2}} }
+	}
+	
+	\ifthenelse{\isempty{#3}}{}{
+		\cvtext{{ \textcolor{darkcol} {#3} }}\\
+	}
+	
+	\cvtext{#4}\\[14pt]
+}
+
+%----------------------------------------------------------------------------------------
+%	TIMELINE (LEGEND)
+%----------------------------------------------------------------------------------------
+
+% colored rule and text for chart legends, wrapped in parbox
+% param 1: text
+% param 2: width in cm or pt, em ...
+% param 3: color
+\newcommand{\legend}[3]{\parbox[t]{#2}{\textcolor{#3}{\rule{#2}{4pt}}\\#1}}
+
+%============================================================================%
+%
+%
+%
+%	DOCUMENT CONTENT
+%
+%
+%
+%============================================================================%
+\begin{document}
+	\definecolor{linen}{rgb}{0.98, 0.94, 0.9}
+	\definecolor{cosmiclatte}{rgb}{1.0, 0.97, 0.91}
+	\pagecolor{linen}
+	\columnratio{0.25}
+	\setlength{\columnsep}{2.2em}
+	\setlength{\columnseprule}{4pt}
+	\colseprulecolor{linen}
+	\backgroundcolor{c[0]}[rgb]{0.96,0.96,0.86} % beige for column-1
+	\begin{paracol}{2}
+		\begin{leftcolumn}
+%			%---------------------------------------------------------------------------------------
+%			%	META IMAGE
+%			%----------------------------------------------------------------------------------------
+%			
+			\begin{center}
+				\begin{tikzpicture}[x=\imagescale,y=-\imagescale]
+					\clip (600/2, 567/2) circle (567/2);
+					\node[anchor=north west, inner sep=0pt, outer sep=0pt] at (0,0) {\includegraphics[width=\imagewidth]{alice.jpeg}};
+				\end{tikzpicture}
+			\end{center}
+			
+			
+			%---------------------------------------------------------------------------------------
+			%	Idiomas
+			%----------------------------------------------------------------------------------------
+			%---------------------------------------------------------------------------------------
+			%	CONTACT
+			%----------------------------------------------------------------------------------------
+			
+			\cvsection{CONTACT}
+			
+			\icontext{MapMarker}{12}{Location}{black}\\[6pt]
+			\icontext{MobilePhone}{12}{+YY xxx xx xx xx}{black}\\[6pt]
+			\iconemail{Envelope}{12}{averycoolemail\\ \color{black} @amail.com}{black}\\%[6pt]
+%			\color{white}' \large{\color{maincol}\faGithub}\color{white}  '  \normalsize\color{black}\href{https://github.com/LMAFR}{https://github.com/\\ \color{white} ' ' ' ' '  \color{black}LMAFR}
+			
+			\cvsection{Languages}
+			%\cvtext{IT Consultant with strong theoretical skills and a passion for OpenSource sofware.\\
+			
+			\progressarc{2mm}{maincol}{1cm}{white}{\large Native}{\textbf{Spanish}}{below}{100} \hfill 
+			\progressarc{2mm}{maincol}{1cm}{white}{\large C1}{\textbf{English}}{below}{80}
+			
+			%---------------------------------------------------------------------------------------
+			%	META SKILLS
+			%----------------------------------------------------------------------------------------
+			\cvsection{Hard Skills}
+			
+			\cvskill{Basketball} {} {0.5} \\[-2pt]
+			
+			\cvskill{Rugby} {} {0.5} \\[-2pt]
+			
+			\cvskill{Baseball} {} {0.5} \\[-2pt]
+			
+			\cvskill{Pickup} {} {0.7} \\[-2pt]
+			
+			\cvskill{Sofing} {} {0.9} \\[-2pt]
+			
+			\cvskill{\LaTeX} {} {0.7} \\[-2pt]
+			
+			\cvskill{Make money} {} {0.5} \\[-2pt]
+			
+			
+			%---------------------------------------------------------------------------------------
+			%	LINKEDIN QRCODE
+			%----------------------------------------------------------------------------------------
+			
+			\cvsection{Linked\faLinkedinSquare}
+			
+			
+			
+			\begin{center} 
+				\qrcode{https://www.linkedin.com}
+			\end{center}
+			
+		\end{leftcolumn}
+		\begin{rightcolumn}
+			
+			%---------------------------------------------------------------------------------------
+			%	TITLE  HEADER
+			%----------------------------------------------------------------------------------------
+			%\fcolorbox{white}{darkcol}{\begin{minipage}[c][3.5cm][c]{1\mpwidth}
+			\begin {center}
+			\begin{tikzpicture}[color=gray]
+				\draw[use as bounding box,thin, linen] (-6,-2) rectangle (6,2);
+				
+				\node {
+					%			\rput[t](0,2){\pgfornament[,height=1.25cm,symmetry=h]{66}}
+					%	\rput[bl](-2,-2){\pgfornament[width=4cm,,symmetry=h]{71}}
+					%			\rput[tl](-6,2){\pgfornament[width=2cm]{63}}
+					%			\rput[tr](6,2){\pgfornament[width=2cm,,symmetry=v]{63}}
+					%			\rput[bl](-6,-2){\pgfornament[width=2cm,,symmetry=h]{63}}
+					%			\rput[br](6,-2){\pgfornament[width=2cm,,symmetry=c]{63}}
+					%	\rput[bl]{-90}(-5,3){\pgfornament[width=6cm]{46}}
+					%	\rput[bl]{90}(5,-3){\pgfornament[width=6cm]{46}}
+					\rput(0,0){\Huge \color{darkcol}\textbf{Alice Cool Resumes}}
+					%			\rput[t](0,0){\pgfornament[width=2.5cm]{75}}
+					\rput(0,-1){\huge\color{darkcol} My cool CV}
+					%	\rput[b](0,0.5){\pgfornament[width=5cm]{69}}
+					%	\rput[tr]{-30}(-1,2.5){\pgfornament[width=2cm]{57}}
+					%	\rput[tl]{30}(1,2.5){\pgfornament[width=2cm,symmetry=v]{57}}
+					%			\rput[br](2,-2){\pgfornament[width=2cm,,symmetry=c]{73}}
+					%			\rput[bl](-2,-2){\pgfornament[width=2cm,,symmetry=h]{73}}
+					%			\rput[br](4,-2){\pgfornament[width=2cm,,symmetry=c]{70}}
+					%			\rput[bl](-4,-2){\pgfornament[width=2cm,,symmetry=h]{70}}
+					%			\rput[tl](-4,2){\pgfornament[width=2cm]{70}}
+					%			\rput[tr](4,2){\pgfornament[width=2cm,,symmetry=v]{70}}
+					%			\rput[tl](-2,2){\pgfornament[width=1.5cm]{73}}
+					%			\rput[tr](2,2){\pgfornament[width=1.5cm,,symmetry=v]{73}}
+					%	\rput[b](0,-2){\pgfornament[width=1.5cm]{68}}
+				};
+				
+			\end{tikzpicture}
+			\end {center}
+			%\end{minipage}} \\[14pt]
+			\vspace{-12pt}
+
+
+%%---------------------------------------------------------------------------------------
+%%	SOFT SKILLS with Neural Network
+%%----------------------------------------------------------------------------------------	
+%\cvsection{Soft Skills}
+%% Mindmap
+%%
+%%\begin{tikzpicture}[scale=0.60,transform shape]
+%%	\path [
+%%	mindmap,
+%%	text = white,
+%%	level 1 concept/.append style =
+%%	{level distance = 4.5cm, font=\large\bfseries, sibling angle=90},
+%%	level 2 concept/.append style =
+%%	{level distance = 3.5cm, font=\normalsize\bfseries},
+%%	level 3 concept/.append style =
+%%	{font=\small\bfseries},
+%%	tex/.style     = {concept, ball color=blue,
+%%		font=\Large\bfseries},
+%%	engines/.style = {concept, ball color=blue!50!black},
+%%	formats/.style = {concept, ball color=red!90!black},
+%%	systems/.style = {concept, ball color=green!50!black},
+%%	%	editors/.style = {concept, ball color=orange!90!black}
+%%	]
+%%	node [tex] {Extremely versatile} [clockwise from=270]
+%%	%	child[concept color=orange, nodes={engines}] 
+%%	%	{   
+%%	%		node {Proactive} 
+%%	%	}
+%%	child [concept color=red!90!black, nodes={formats}, minimum size=3cm] 
+%%	{
+%%		node {\\ Adaptability } [clockwise from=300]
+%%		child [minimum size=2.5cm]{ node {\\ Self-taught\\ Capability} }
+%%		child [minimum size=2cm]{ node {Fast Learning} }
+%%		child [minimum size=2.5cm]{ node {Multidis-\\ciplinarity} }
+%%	}		
+%%	child [concept color=green!50!black, nodes={systems}] 
+%%	{
+%%		node {Curiosity} [clockwise from=210]
+%%		child [minimum size=2cm]{ node {Critical thinking} [clockwise from=300]}
+%%		child [minimum size=2cm]{ node {Proactive} [clockwise from=60]}
+%%	}	
+%%	child [concept color=blue!50!black, nodes={engines}, minimum size=2.5cm] {
+%%		node {Business Sense} [clockwise from=180]
+%%		child [minimum size=2cm]{ node {Effective Communication} }
+%%		child [minimum size=2.4cm]{ node {Storytelling} }
+%%		child [minimum size=2cm]{ node {Teamwork} }};
+%%\end{tikzpicture}
+%
+%\end{multicols}
+%
+%
+%
+%\end{rightcolumn}
+%
+%\end{paracol}
+%
+%\end{document}
+%---------------------------------------------------------------------------------------
+%	ABOUT ME
+%----------------------------------------------------------------------------------------
+
+\cvsection{About me}
+\vspace{-30pt}
+\cvmetaevent
+{}
+{}
+{}
+{Do you want to know about me?}
+
+%me gustaría combinar mi formación analítica e interdisciplinar con mis habilidades de comunicación para generar sinergias positivas entre los Data Scientists y los clientes, trabajando codo con codo con ellos y con los Business Developers
+%---------------------------------------------------------------------------------------
+%	Languages
+%----------------------------------------------------------------------------------------
+
+\begin{multicols}{2}[\columnsep1em] 
+	
+	
+	
+	
+	
+	%---------------------------------------------------------------------------------------
+	% 	EDUCATION & WORK EXPERIENCE
+	%---------------------------------------------------------------------------------------
+	
+	\cvsection{Education}
+	\vspace{-30pt}
+	
+	
+	\begin{tikzpicture}[
+		node distance = 1mm and 3mm,
+		start chain = A going below,
+		dot/.style = {circle, draw=gray, very thick, fill=white,
+			minimum size=3mm},
+		box/.style = {rectangle, text width=53mm,
+			inner xsep=4mm, inner ysep=1mm,
+			font=\sffamily\small\linespread{0.84}\selectfont,
+			on chain},
+		]
+		\begin{scope}[every node/.append style={box}]
+			
+			\node {A} ;		
+			\node {B} ;
+			\node {C} ;	
+		\end{scope}
+		\draw[very thick, gray, {Triangle[length=4pt)]}-{Circle[length=3pt]},
+		shorten <=-3mm, shorten >=-3mm]           % <--- here is adjusted additional arrow's 
+		%		\draw[very thick, blue, {Triangle[length=4pt)]}-{Circle[length=3pt]},
+		%		shorten <=-3mm, shorten >=-3mm]           % <--- here is adjusted additional arrow's 
+		(A-1.north west) -- (A-3.south west);
+		\foreach \i [ count=\j] in {Now,2014,2012}
+		\node[dot,label=left:\i] at (A-\j.west) {};
+	\end{tikzpicture}
+	\vspace{30pt}
+	
+	\cvsection{Work\\ Experience}
+	
+	\begin{tikzpicture}[
+		node distance = 1mm and 3mm,
+		start chain = A going below,
+		dot/.style = {circle, draw=gray, very thick, fill=white,
+			minimum size=3mm},
+		box/.style = {rectangle, text width=53mm,
+			inner xsep=4mm, inner ysep=1mm,
+			font=\sffamily\small\linespread{0.84}\selectfont,
+			on chain},
+		]
+		\begin{scope}[every node/.append style={box}]	
+			
+			\node {\textcolor{maincol}{A'} };
+			
+			\node {\textcolor{maincol}{B'}};
+	
+			\node {\textcolor{maincol}{C'}} ;
+		\end{scope}
+		\draw[very thick, gray, {Triangle[length=4pt)]}-{Circle[length=3pt]},
+		shorten <=-3mm, shorten >=-3mm]           % <--- here is adjusted additional arrow's 
+		%		\draw[very thick, blue, {Triangle[length=4pt)]}-{Circle[length=3pt]},
+		%		shorten <=-3mm, shorten >=-3mm]           % <--- here is adjusted additional arrow's 
+		(A-1.north west) -- (A-3.south west);
+		\foreach \i [ count=\j] in  {2019,2019,2018}
+		\node[dot,label=left:\i] at (A-\j.west) {};
+	\end{tikzpicture}
+	
+\end{multicols}
+
+\cvsection{Soft Skills} 
+
+%---------------------------------------------------------------------------------------
+%	SOFT SKILLS
+%----------------------------------------------------------------------------------------	
+
+ \color{white}' \large{\color{maincol}\faComments}\color{white} ' '\color{black}\normalsize Feel youserlf free to use these or other symbols to show what you want to say and add \color{red}colours \color{black}and different letter \large size \normalsize to emphasize it.\\
+    
+ 
+ \color{white}' \large{\color{maincol}\faLightbulbO}\color{white} ' '\color{black}\normalsize\\
+  
+ \color{white}' \large{\color{maincol}\faGears}\color{white} ' '\color{black}\normalsize \\
+ 
+  \color{white}' \large{\color{maincol}\faMortarBoard}\color{white} ' '\color{black}\normalsize
+
+%---------------------------------------------------------------------------------------
+%	INTERESTS
+%----------------------------------------------------------------------------------------
+
+\begin{center}
+	\smartdiagramset{
+		bubble center node font = \small,
+		bubble node font = \footnotesize,
+		bubble center node size =0.5cm,
+		bubble node size =0.5cm,
+		set color list = {maincol, maincol, maincol, maincol, maincol, maincol, maincol, maincol},
+		% specifies which is the distance among the bubble center node and the other bubbles
+		distance center/other bubbles = 0.55cm,
+		% sets the distance from the text to the border of the bubble center node
+		distance text center bubble = 0.5cm,
+		bubble fill opacity = 0.1,
+		bubble text opacity = 1
+	}
+	\tikzset{
+		bubble node/.append style={
+			text width=1.5cm,
+			align=center}
+	}
+	\smartdiagram[bubble diagram]{\textbf{Interests},
+		1,2,3,4,5,6,7}
+\end{center}
+\end{rightcolumn}
+
+\end{paracol}
+
+\end{document}
